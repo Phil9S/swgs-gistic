@@ -1,10 +1,6 @@
 # Snakemake workflow: swgs-gistic
 
-[![Snakemake](https://img.shields.io/badge/snakemake-≥5.10.0-brightgreen.svg)](https://snakemake.bitbucket.io)
-[![Build Status](https://travis-ci.org/snakemake-workflows/swgs-gistic.svg?branch=master)](https://travis-ci.org/snakemake-workflows/swgs-gistic)
-
-This is the template for a new Snakemake workflow. Replace this text with a comprehensive description covering the purpose and domain.
-Insert your code into the respective folders, i.e. `scripts`, `rules`, and `envs`. Define the entry point of the workflow in the `Snakefile` and the main configuration in the `config.yaml` file.
+[![Snakemake](https://img.shields.io/badge/snakemake-≥5.10.0-brightgreen.svg)](https://snakemake.bitbucket.io)  
 
 ## Authors
 
@@ -16,12 +12,29 @@ If you use this workflow in a paper, don't forget to give credits to the authors
 
 ### Step 1: Obtain a copy of this workflow
 
-1. Create a new github repository using this workflow [as a template](https://help.github.com/en/articles/creating-a-repository-from-a-template).
 2. [Clone](https://help.github.com/en/articles/cloning-a-repository) the newly created repository to your local system, into the place where you want to perform the data analysis.
 
-### Step 2: Configure workflow
+### Step 2: Install GISTIC 2.0
 
-Configure the workflow according to your needs via editing the files in the `config/` folder. Adjust `config.yaml` to configure the workflow execution, and `samples.tsv` to specify your sample setup.
+Set up directory for GISTIC 2.0 in the repository
+
+```
+cd swgs-gistic/
+mkdir gistic
+cd gistic/
+```
+
+Download and set up GISTIC 2.0
+
+```
+wget -c ftp://ftp.broadinstitute.org/pub/GISTIC2.0/GISTIC_2_0_23.tar.gz
+tar zxf GISTIC_2_0_23.tar.gz
+cd MCR_Installer/
+unzip MCRInstaller.zip
+./install -mode silent -agreeToLicense yes -destinationFolder {FULL_PATH}/swgs-gistic/gistic/MATLAB_Compiler_Runtime/
+cd ../../
+```
+_note: {FULL_PATH} should be replaced with the absolute path for the swgs-gistic pipeline repository_
 
 ### Step 3: Install Snakemake
 
@@ -101,4 +114,3 @@ In case you have also changed or added steps, please consider contributing them 
 ## Testing
 
 Test cases are in the subfolder `.test`. They are automatically executed via continuous integration with [Github Actions](https://github.com/features/actions).
-
