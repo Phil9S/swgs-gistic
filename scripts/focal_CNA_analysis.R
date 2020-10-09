@@ -1,5 +1,5 @@
 ## Load abs copy number data and perform GISTIC CNA enrichment analysis
-rm(list=ls())
+args = commandArgs(trailingOnly=TRUE)
 
 # Load libraries
 library(Biobase)
@@ -7,23 +7,18 @@ library(QDNAseqmod)
 library(tidyverse)
 
 # GISTIC parameters
-seg_file_name <- "britroc_30kb_segs_call"
-gistic_folder <- "/mnt/scratcha/fmlab/smith10/focal/"
-basedir <- getwd()
-results_folder <- "results_def/"
-output_folder <- file.path(paste0(basedir,"/",results_folder,"/"))
+sample_list <- as.character(readLines(snakemake@input[["list"]]))
+seg_file_name <- snakemake@wildcards[["subset"]]
+gistic_folder <- snakemake@config[["gistic"]] 
+output_folder <- paste0(snakemake@config[["output_dir"]],seg_file_name,"_gistic_results/")
 refgenefile <- paste0(gistic_folder,"refgenefiles/hg19.mat")
 
-# Make results folder
-if(!dir.exists(output_folder)){
-  dir.create(path = output_folder,recursive = TRUE)
-}
-
 # Load abs data
-abs_data <- readRDS("britroc_30kb_ds_absCopyNumber.rds")
+rds <- snakemake@config[["rds"]]
+abs_data <- readRDS(rds)
 
 # Load meta data
-meta <- read.table(file = "britroc_30kb_signature_data_meta.tsv",header = T,sep = "\t")
+meta <- read.table(file = snakemake@config[["meta"]],header = T,sep = "\t")
 
 # Generate log2-like relative segments
 # GISTIC defines the CN.seg value as (6) Seg.CN   =   (log2() -1 of copy number)
@@ -69,6 +64,9 @@ extract_rel_segs <- function(abs_data = x){
   return(all_segs)
 }
 
+# Subset metafile
+meta <- meta[meta$SAMPLE_ID %in% sample_list,]
+
 # Extract segments across all samples
 abs_data <- abs_data[,colnames(abs_data) %in% meta$SAMPLE_ID]
 seg_calls <- extract_rel_segs(abs_data = abs_data)
@@ -81,37 +79,35 @@ write.table(x = seg_calls,
             col.names = FALSE,
             row.names = FALSE)
 
-# array file generation
-#alf <- paste0(output_folder,seg_file_name,"_array.txt")
-
 # call script that sets MCR environment and calls GISTIC executable - example gistic params
-gistic.def.cmd <- paste0(gistic_folder,"/gistic2 ",
-                        " -b ",output_folder,
-                        " -seg ",paste0(output_folder,seg_file_name,".txt"),
-                        " -refgene ",refgenefile,
-                        " -fname default",
-                        " -armpeel 1",
-                        " -brlen 0.5",
-                        " -savegene 1",
-                        " -genegistic 1",
-                        " -smallmem 1",
-                        " -broad 1",
-                        " -conf 0.90",
-                        " -gcm extreme",
-                        " -ta 0.1",
-                        " -cap 1.5",
-                        " -td 0.1",
-                        " -js 4",
-                        " -maxseg 2500",
-                        " -qvt 0.25",
-                        " -rx 1")
+#gistic.def.cmd <- paste0(gistic_folder,"/gistic2 ",
+#                        " -b ",output_folder,
+#                        " -seg ",paste0(output_folder,seg_file_name,".txt"),
+#                        " -refgene ",refgenefile,
+#                        " -fname default",
+#                        " -armpeel 1",
+#                        " -brlen 0.5",
+#                        " -savegene 1",
+#                        " -genegistic 1",
+#                        " -smallmem 1",
+#                        " -broad 1",
+#                        " -conf 0.90",
+#                        " -gcm extreme",
+#                        " -ta 0.1",
+#                        " -cap 1.5",
+#                        " -td 0.1",
+#                        " -js 4",
+#                        " -maxseg 2500",
+#                        " -qvt 0.25",
+#                        " -rx 1")
 
 # call script that sets MCR environment and calls GISTIC executable - TCGA params
-gistic.tcga.cmd <- paste0(gistic_folder,"gistic2 ",
+
+gistic.tcga.cmd <- paste0(gistic_folder,"gistic2",
                           " -b ",output_folder,
                           " -seg ",paste0(output_folder,seg_file_name,".txt"),
                           " -refgene ",refgenefile,
-                          " -fname tcga",
+                          " -fname ",seg_file_name,
                           " -armpeel 1",
                           " -brlen 0.7",
                           " -savegene 1",
@@ -127,6 +123,7 @@ gistic.tcga.cmd <- paste0(gistic_folder,"gistic2 ",
                           " -maxseg 2000",
                           " -qvt 0.25",
                           " -rx 0")
+
 # Run gistic
 #system(command = gistic.def.cmd)
 system(command = gistic.tcga.cmd)

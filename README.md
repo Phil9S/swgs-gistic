@@ -20,8 +20,6 @@ Set up directory for GISTIC 2.0 in the repository
 
 ```
 cd swgs-gistic/
-mkdir gistic
-cd gistic/
 ```
 
 Download and set up GISTIC 2.0
@@ -31,8 +29,8 @@ wget -c ftp://ftp.broadinstitute.org/pub/GISTIC2.0/GISTIC_2_0_23.tar.gz
 tar zxf GISTIC_2_0_23.tar.gz
 cd MCR_Installer/
 unzip MCRInstaller.zip
-./install -mode silent -agreeToLicense yes -destinationFolder {FULL_PATH}/swgs-gistic/gistic/MATLAB_Compiler_Runtime/
-cd ../../
+./install -mode silent -agreeToLicense yes -destinationFolder {FULL_PATH}/swgs-gistic/MATLAB_Compiler_Runtime/
+cd ../
 ```
 _note: {FULL_PATH} should be replaced with the absolute path for the swgs-gistic pipeline repository_
 

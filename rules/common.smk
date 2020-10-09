@@ -1,15 +1,19 @@
 from snakemake.utils import validate
 import pandas as pd
+from pathlib import Path
+from snakemake.utils import min_version
+import os.path
 
-# this container defines the underlying OS for each job when using the workflow
-# with --use-conda --use-singularity
-singularity: "docker://continuumio/miniconda3"
-
-##### load config and sample sheets #####
+min_version("5.10.0")
 
 configfile: "config/config.yaml"
-validate(config, schema="../schemas/config.schema.yaml")
 
-samples = pd.read_csv(config["samples"], sep="\t").set_index("sample", drop=False)
-samples.index.names = ["sample_id"]
-validate(samples, schema="../schemas/samples.schema.yaml")
+##### load config and sample sheets #####
+samplesheet = pd.read_table(config["samplesheet"]).set_index(["subset"], drop=False)
+SUBSETS = list(samplesheet['subset'])
+
+def get_list(wildcards):
+    files = list(samplesheet.loc[(wildcards.subset), ["file"]])
+    return files
+
+OUT_DIR=config["output_dir"]
